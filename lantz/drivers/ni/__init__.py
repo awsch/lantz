@@ -4,7 +4,7 @@
     ~~~~~~~~~~~~~~~~
 
     :company: National Instruments
-    :description: 
+    :description:
     :website: http://www.ni.com/
 
     ----
@@ -15,3 +15,5 @@
 
 from . import daqmx
 
+
+#
