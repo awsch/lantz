@@ -13,7 +13,8 @@
     :license: BSD, see LICENSE for more details.
 """
 
-from . import daqmx
-
-
+#__all__ = ['daqmx']
+#import lantz.drivers.ni.daqmx
+#import daqmx
+#from . import daqmx
 #

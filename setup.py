@@ -62,6 +62,7 @@ setup(name='Lantz',
                 'lantz.utils',
                 'lantz.drivers'] +
                ['lantz.drivers.' + company for company in companies] +
+               ['lantz.drivers.ni.daqmx'] +
                ['lantz.drivers.legacy.' + company for company in legacy_companies],
       test_suite='lantz.testsuite.testsuite',
       install_requires=['pint>=0.6',
