@@ -451,7 +451,7 @@ class CounterInputTask(Task):
     """Exposes NI-DAQmx counter input task to Python.
     """
 
-    CHANNEL_TYPE = 'CI'
+    IO_TYPE = 'CI'
 
 
     def read_scalar(self, timeout=10.0):
