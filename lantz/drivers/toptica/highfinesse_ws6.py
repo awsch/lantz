@@ -4,7 +4,7 @@ from lantz import Feat, DictFeat, Action, Q_
 import time
 from ctypes import c_uint, c_void_p, c_double, pointer, POINTER
 
-from lantz.drivers.bristol import Wavemeter
+from lantz.drivers import Wavemeter
 import numpy as np
 
 
