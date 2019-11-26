@@ -59,6 +59,14 @@ class Read_DAQ(Driver):
             return task.read(samples_per_channel=samples_per_channel, timeout=timeout, group_by=group_by)
         elif task.IO_TYPE == 'CI':
             return task.read(samples_per_channel=samples_per_channel, timeout=timeout)
+
+    @Action()
+    def configure_timing_sample_clock(self, task_name, **kwargs):
+        return self._tasks[task_name].configure_timing_sample_clock(**kwargs)
+
+    @Action()
+    def get_task_type(self, task_name):
+        return self._tasks[task_name].IO_TYPE
     
     # def simple_read
     #     if self.task.IO_TYPE == 'AI':
