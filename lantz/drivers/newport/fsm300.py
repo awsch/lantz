@@ -12,6 +12,7 @@
 from lantz import Driver
 from lantz.driver import Feat, DictFeat, Action
 from lantz.drivers.ni.daqmx import AnalogOutputTask, VoltageOutputChannel
+from lantz.drivers.ni.simple_daq import Read_DAQ
 
 from lantz import Q_
 
@@ -29,7 +30,6 @@ def enforce_units(val, units):
 def enforce_point_units(point, units='um'):
     point = enforce_units(point[0], units) , enforce_units(point[1], units)
     return point
-
 
 class FSM300(Driver):
 
@@ -206,3 +206,26 @@ class FSM300(Driver):
             return averaged
         else:
             pass
+
+
+class Read_FSM(FSM300):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._daq = Read_DAQ('Dev1')
+        self.acq_task = None
+
+    def finalize(self):
+        super().finalize()
+        self._daq.clear_task(self.task_name)
+
+    @Action()
+    def new_input_task(self, read_chs):
+        self.task_name = 'Read_FSM_{}'.format(np.random.randint(2**31))
+        self._daq.new_task(self.task_name, read_chs)
+        self.acq_task = self._daq._tasks[self.task_name]
+
+    @Action()
+    def line_scan(self, init_point, final_point, steps, acq_rate=Q_('20 kHz'), pts_per_pos=100):
+        if self.acq_task is None:
+            raise Exception('Must first define the input task using the "new_input_task" action')
+        return super().line_scan(init_point, final_point, steps, self.acq_task, acq_rate=acq_rate, pts_per_pos=pts_per_pos)
