@@ -275,7 +275,21 @@ class DLC(MessageBasedDriver):
         def scan_signal_type(self, val):
             return self.set_param('laser1:scan:signal-type', val)
 
+        ##------------------------
+        ##    Temperature Control
+        ##------------------------
 
+        @Feat(limits=(20, 30))
+        def temperature_setpoint(self):
+            return float(self.get_param('laser1:dl:tc:temp-set'))
+
+        @temperature_setpoint.setter
+        def temperature_setpoint(self, val):
+            return self.set_param('laser1:dl:tc:temp-set', val)
+
+        @Feat()
+        def temperature_actual(self):
+            return float(self.get_param('laser1:dl:tc:temp-act'))
 
 class DLCException(Exception):
     pass
