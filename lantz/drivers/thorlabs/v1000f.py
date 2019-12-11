@@ -57,14 +57,14 @@ class V1000F(Driver):
         return Q_(np.interp(v, cal_vs, cal_ps), 'W')
 
     def initialize(self):
-        self.task = AnalogOutputTask('Analog_Out'.format(self.ch))
+        self.task = AnalogOutputTask('Analog_Out_{}'.format(self.ch.split('/')[-1]))
         VoltageOutputChannel(self.ch, min_max=self.min_max, units='volts', task=self.task)
     
     def finalize(self):
         self.task.clear()
 
     @Action()
-    def run_calibration(self, power_fun, calibration_file=default_filename, npoints=500, min_pt=0, max_pt=5, delay_per_point=0.1):
+    def run_calibration(self, power_fun, npoints=500, min_pt=0, max_pt=5, delay_per_point=0.1):
         voltages = np.linspace(min_pt, max_pt, npoints)
         powers = np.zeros(npoints)
         for i, v in enumerate(voltages):
@@ -73,5 +73,5 @@ class V1000F(Driver):
             powers[i] = power_fun().to('W').m
             print('{} V = {} W'.format(v, powers[i]))
         data = np.transpose(np.array([voltages, powers]))
-        np.savetxt(calibration_file, data, delimiter=",", header='voltage,power', comments='')
+        np.savetxt(self.calibration_file, data, delimiter=",", header='voltage,power', comments='')
         return data
