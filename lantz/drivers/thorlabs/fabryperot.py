@@ -48,19 +48,21 @@ def peakdet(arr, delta=0.1):
 
 class FabryPerot(Driver):
 
-    def __init__(self, ch, sw_ch, trig_ch=None):
+    def __init__(self, ch, sw_ch, active_trig_ch, passive_trig_ch=None):
         
         self._points = 1000
         self._period = Q_(10, 'ms')
         self._selectivity = 0.1
         self.ch = ch
         self.sw_ch = sw_ch
-        self.trig_ch = trig_ch
+        self.active_trig_ch = active_trig_ch
+        self.passive_trig_ch = passive_trig_ch
 
         self._single_mode = True
         self._peak_locations = list()
         self._trace = np.zeros(self.points)
         self._sw_state = False
+        self._trig_ch = self.passive_trig_ch
 
         self.acq_task = AnalogInputTask('fp_readout')
         self.sw_task = DigitalOutputTask('fp_sw_task')
@@ -81,7 +83,8 @@ class FabryPerot(Driver):
         self.acq_task.clear()
         self.acq_task = AnalogInputTask('fp_readout')
         self.acq_task.add_channel(VoltageInputChannel(self.ch))
-        self.acq_task.configure_trigger_digital_edge_start(self.trig_ch, edge='rising')
+        if not self._trig_ch is None:
+            self.acq_task.configure_trigger_digital_edge_start(self._trig_ch, edge='rising')
 
         rate = self.points / self.period
         clock_config = {
@@ -109,6 +112,10 @@ class FabryPerot(Driver):
         state_pts = np.ones(100) if state else np.zeros(100)
         self.sw_task.write(state_pts)
         self._sw_state = state
+
+        #Switch trigger channel
+        self._trig_ch = self.active_trig_ch if state else self.passive_trig_ch
+        self.setup_task()
         return
 
     @Feat()
@@ -138,7 +145,7 @@ class FabryPerot(Driver):
 
     @Feat()
     def single_mode(self):
-        return self._single_mode
+        return bool(self._single_mode)
 
     @Action()
     def peak_locations(self):
