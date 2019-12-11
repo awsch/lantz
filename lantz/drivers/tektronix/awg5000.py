@@ -147,6 +147,14 @@ class AWG5000(MessageBasedDriver):
     def seq_loop_infinite(self, line, infinite_loop):
         self.write('SEQUENCE:ELEMENT{}:LOOP:INFINITE {}'.format(line, infinite_loop))
 
+    @DictFeat()
+    def seq_goto(self, line):
+        return int(self.query('SEQUENCE:ELEMENT{}:GOTO:INDEX?'.format(line)))
+
+    @seq_goto.setter
+    def seq_goto(self, line, goto_line):
+        self.write('SEQUENCE:ELEMENT{}:GOTO:INDEX {}'.format(line, goto_line))
+
     @Action()
     def jump_to_line(self, line):
         self.write('SEQ:JUMP:IMM {}'.format(line))
