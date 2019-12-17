@@ -285,6 +285,7 @@ class Read_FSM(Driver):
             self.task.stop()
             scanned = scanned.reshape((steps, pts_per_pos + 1))
             averaged = np.diff(scanned).mean(axis=1)
+            self._position = final_point #Set the position now to be at the end of the line
             return averaged*acq_rate.to('Hz').m
         elif self.acq_task.IO_TYPE == 'AI':
             step_voltages = np.repeat(step_voltages, pts_per_pos, axis=0)
@@ -311,6 +312,7 @@ class Read_FSM(Driver):
             self.task.stop()
             scanned = scanned.reshape((steps, pts_per_pos))
             averaged = scanned.mean(axis=1)
+            self._position = final_point #Set the position now to be at the end of the line
             return averaged
         else:
             pass
