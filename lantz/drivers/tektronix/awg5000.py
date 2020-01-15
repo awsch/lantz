@@ -85,7 +85,8 @@ class AWG5000(MessageBasedDriver):
     @Action()
     def toggle_all_outputs(self, state):
         for channel in range(1, 5):
-            self.toggle_output[channel] = state
+            while not self.toggle_output[channel] == state:
+                self.toggle_output[channel] = state
 
     @DictFeat(units='V', keys=_ch_markers)
     def marker_amplitude(self, ch_m):
