@@ -45,6 +45,10 @@ class Read_DAQ(Driver):
         task.clear()
 
     @Action()
+    def clear_all_task(self):
+        for task_name in self._tasks:
+            self.clear_task(task_name)
+    @Action()
     def start(self, task_name):
         self._tasks[task_name].start()
 

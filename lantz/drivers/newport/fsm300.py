@@ -212,14 +212,14 @@ class Read_FSM(Driver):
     def __init__(self, x_ao_ch, y_ao_ch,
                  ao_smooth_rate=Q_('10 kHz'), ao_smooth_steps=Q_('1000 1/V'),
                  limits=((Q_(-10, 'V'), Q_(10, 'V')), (Q_(-10, 'V'), Q_(10, 'V'))),
-                 cal=(Q_(10, 'um/V'), Q_(7.6, 'um/V'))):
+                 cal=(Q_(7.6, 'um/V'), Q_(10, 'um/V'))):
         
         super().__init__()
         self.x_limits, self.y_limits = [(val / Q_('1 V')).m for val in limits[0]], [(val / Q_('1 V')).m for val in limits[1]]
         self.ao_smooth_rate, self.ao_smooth_steps, self.cal = ao_smooth_rate, ao_smooth_steps, cal
         self.x_ao_ch, self.y_ao_ch = x_ao_ch, y_ao_ch
 
-        self._position = (Q_('0 um'), Q_('0 um'))
+        self._position = (Q_(0.0, 'um'), Q_(0.0, 'um'))
         self._daq = Read_DAQ('Dev1')
         self.acq_task = None
 
@@ -285,6 +285,7 @@ class Read_FSM(Driver):
             self.task.stop()
             scanned = scanned.reshape((steps, pts_per_pos + 1))
             averaged = np.diff(scanned).mean(axis=1)
+            self._position = final_point #Set the position now to be at the end of the line
             return averaged*acq_rate.to('Hz').m
         elif self.acq_task.IO_TYPE == 'AI':
             step_voltages = np.repeat(step_voltages, pts_per_pos, axis=0)
@@ -311,6 +312,7 @@ class Read_FSM(Driver):
             self.task.stop()
             scanned = scanned.reshape((steps, pts_per_pos))
             averaged = scanned.mean(axis=1)
+            self._position = final_point #Set the position now to be at the end of the line
             return averaged
         else:
             pass
@@ -321,7 +323,7 @@ class Read_FSM(Driver):
 
     @x.setter
     def x(self, pos):
-        self.abs_position = (pos, self._position[1])
+        self._set_position(pos, self._position[1])
 
     @Feat(units='um')
     def y(self):
@@ -329,12 +331,12 @@ class Read_FSM(Driver):
 
     @y.setter
     def y(self, pos):
-        self.abs_position = (self._position[0], pos)
+        self._set_position(self._position[0], pos)
 
     @Action()
     def set_position(self, x, y):
-        self.x = x
-        self.y = y
+        self._set_position(x,y)
+        self._position = enforce_point_units([x,y])
 
     def _set_position(self, x, y):
         target = enforce_point_units([x,y])
