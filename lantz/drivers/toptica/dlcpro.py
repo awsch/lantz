@@ -166,7 +166,11 @@ class DLC(MessageBasedDriver):
         def piezo_voltage(self, val):
             return self.set_param('laser1:dl:pc:voltage-set', val)
 
-        @Feat()
+        ### ------------------------------------
+        ### Piezo external modulation commands
+        ### ------------------------------------
+        
+        @Feat(values={'none':-3, 'Fine In 1': 0, 'Fine In 2': 1, 'Fast In 3':2, 'Fast In 4':4})
         def piezo_external_input_signal(self):
             return int(self.get_param('laser1:dl:pc:external-input:signal'))
 
@@ -190,6 +194,35 @@ class DLC(MessageBasedDriver):
         def piezo_external_input_enabled(self, val):
             return self.set_param('laser1:dl:pc:external-input:enabled', val)
 
+        ### ------------------------------------
+        ### Current external modulation commands
+        ### ------------------------------------
+
+        @Feat(values={'none':-3, 'Fine In 1': 0, 'Fine In 2': 1, 'Fast In 3':2, 'Fast In 4':4})
+        def current_external_input_signal(self):
+            return int(self.get_param('laser1:dl:cc:external-input:signal'))
+
+        @current_external_input_signal.setter
+        def current_external_input_signal(self, val):
+            return self.set_param('laser1:dl:cc:external-input:signal', int(val))
+
+        @Feat()
+        def current_external_input_factor(self):
+            return float(self.get_param('laser1:dl:cc:external-input:factor'))
+
+        @current_external_input_factor.setter
+        def current_external_input_factor(self, val):
+            return self.set_param('laser1:dl:cc:external-input:factor', float(val))
+
+        @Feat(values={True: '#t', False: '#f'})
+        def current_external_input_enabled(self):
+            return self.get_param('laser1:dl:cc:external-input:enabled')
+
+        @current_external_input_enabled.setter
+        def current_external_input_enabled(self, val):
+            return self.set_param('laser1:dl:cc:external-input:enabled', val)
+
+
         ##------------------------
         ##    Scan Control
         ##------------------------
@@ -202,7 +235,7 @@ class DLC(MessageBasedDriver):
         def scan_enabled(self, val):
             return self.set_param('laser1:scan:enabled', val)
 
-        @Feat()
+        @Feat(values={'none':-3, 'A': 20, 'B': 21})
         def scan_channel(self):
             return int(self.get_param('laser1:scan:output-channel'))
 
@@ -242,7 +275,21 @@ class DLC(MessageBasedDriver):
         def scan_signal_type(self, val):
             return self.set_param('laser1:scan:signal-type', val)
 
+        ##------------------------
+        ##    Temperature Control
+        ##------------------------
 
+        @Feat(limits=(20, 30))
+        def temperature_setpoint(self):
+            return float(self.get_param('laser1:dl:tc:temp-set'))
+
+        @temperature_setpoint.setter
+        def temperature_setpoint(self, val):
+            return self.set_param('laser1:dl:tc:temp-set', val)
+
+        @Feat()
+        def temperature_actual(self):
+            return float(self.get_param('laser1:dl:tc:temp-act'))
 
 class DLCException(Exception):
     pass

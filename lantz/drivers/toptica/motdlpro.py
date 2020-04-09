@@ -237,7 +237,6 @@ class MotDLpro(Driver):
             stopbits=serial.STOPBITS_ONE,
             timeout=0.1,
         )
-
         self.init_motor_parameters()
         self.get_calibration_data()
         return
@@ -273,8 +272,8 @@ class MotDLpro(Driver):
 
     # def get_calibration_data(self):
     #     # hardcode for now - need to change when getting new laser
-    #     self.wavelength_limits = (1064.86, 1144.51)
-    #     self.p_coeffs = (-1.15278e6, 64.5135, 0.962788)
+    #     self._wavelength_limits = (1064.86, 1144.51)
+    #     self._p_coeffs = (-1.15278e6, 64.5135, 0.962788)
     #     self.backlash_coeff = 5035
     #     return
 
@@ -290,8 +289,8 @@ class MotDLpro(Driver):
         p1 = self.toptica_integer_to_double(params[28:30])
         p0 = self.toptica_integer_to_double(params[30:32])
         backlash = params[32]
-        self.wavelength_limits = (min_wl, max_wl)
-        self.p_coeffs = p2, p1, p0
+        self._wavelength_limits = (min_wl, max_wl)
+        self._p_coeffs = p2, p1, p0
         self.backlash_coeff = backlash
         self.step_margin = 1000
         self.step_limits = self.wavelength_to_step(min_wl), self.wavelength_to_step(max_wl)
@@ -350,18 +349,20 @@ class MotDLpro(Driver):
                 raise TMCLError
             return rval
 
+    @Action()
     def wavelength_to_step(self, wl):
-        if not self.wavelength_limits[0] <= wl <= self.wavelength_limits[1]:
-            raise ValueError('wavelength {} out of operation range ({}, {})'.format(wl, *self.wavelength_limits))
-        p0, p1, p2 = self.p_coeffs
+        if not self._wavelength_limits[0] <= wl <= self._wavelength_limits[1]:
+            raise ValueError('wavelength {} out of operation range ({}, {})'.format(wl, *self._wavelength_limits))
+        p0, p1, p2 = self._p_coeffs
         step = p0 + p1 * wl + p2 * wl * wl
         return int(step)
 
+    @Action()
     def step_to_wavelength(self, step):
-        p0, p1, p2 = self.p_coeffs
+        p0, p1, p2 = self._p_coeffs
         wl = (-p1 + np.sqrt(p1 * p1 - 4 * p2 * (p0 - step))) / (2 * p2)
-        if not self.wavelength_limits[0] <= wl <= self.wavelength_limits[1]:
-            raise ValueError('wavelength {} out of operation range ({}, {})'.format(wl, *self.wavelength_limits))
+        if not self._wavelength_limits[0] <= wl <= self._wavelength_limits[1]:
+            raise ValueError('wavelength {} out of operation range ({}, {})'.format(wl, *self._wavelength_limits))
         return wl
 
     @Feat(limits=(0, 300000))
@@ -374,7 +375,7 @@ class MotDLpro(Driver):
         ret = self.send_instruction(4, typ=0, mot=0, val=step)
         time.sleep(0.25)
         now = time.time()
-        while time.time() < (now + 10.0):
+        while time.time() < (now + 25.0):
             if step == self.position:
                 break
             else:
@@ -384,6 +385,14 @@ class MotDLpro(Driver):
         return
 
     @Feat()
+    def wavelength_limits(self):
+        return self._wavelength_limits
+
+    @Feat()
+    def p_coeffs(self):
+        return self._p_coeffs
+
+    @Feat(units='nm')
     def wavelength(self):
         return self.step_to_wavelength(self.position)
 
@@ -448,7 +457,7 @@ class MotDLpro(Driver):
 
     @Action()
     def calibrate(self, steps=1000):
-        lower, upper = self.wavelength_limits
+        lower, upper = self._wavelength_limits
         _positions = np.linspace(lower, upper, steps)
         frequencies = list()
         wavelengths = list()

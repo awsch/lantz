@@ -159,7 +159,7 @@ class AnalogOutputTask(Task):
 
 
     @Action(units=(None, None, 'seconds', None), values=(None, None, None, _GROUP_BY))
-    def write(self, data, auto_start=True, timeout=10.0, group_by='scan'):
+    def write(self, data, auto_start=True, timeout=Q_(10.0,'seconds'), group_by='scan'):
         """
         Write multiple floating-point samples or a scalar to a task
         that contains one or more analog output channels.
@@ -243,7 +243,7 @@ class AnalogOutputTask(Task):
 class DigitalTask(Task):
 
     @Action(units=(None, 'seconds', None), values=(None, None, _GROUP_BY))
-    def read(self, samples_per_channel=None, timeout=10.0, group_by='scan'):
+    def read(self, samples_per_channel=None, timeout=Q_(10.0,'seconds'), group_by='scan'):
         """
         Reads multiple samples from each digital line in a task. Each
         line in a channel gets one byte per sample.
@@ -364,7 +364,7 @@ class DigitalOutputTask(DigitalTask):
 
 
     @Action(units=(None, None, 'seconds', None), values=(None, {True, False}, None, _GROUP_BY))
-    def write(self, data, auto_start=True, timeout=10.0, group_by='scan'):
+    def write(self, data, auto_start=True, timeout=Q_(10.0,'seconds'), group_by='scan'):
         """
         Writes multiple samples to each digital line in a task. When
         you create your write array, each sample per channel must
