@@ -16,8 +16,12 @@ class V1000F(Driver):
         self._voltage = 0
         self.ch = ch
         self.min_max = min_max
-        self.calibration_file = calibration_file
+        self._calibration_file = calibration_file
         return
+
+    @Feat
+    def calibration_file(self):
+        return self._calibration_file
 
     @Feat(units='V', limits=(0., 5.))
     def voltage(self):
